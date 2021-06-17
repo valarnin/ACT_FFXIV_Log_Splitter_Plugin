@@ -1,0 +1,1 @@
+# ACT_FFXIV_Log_Splitter_Plugin
