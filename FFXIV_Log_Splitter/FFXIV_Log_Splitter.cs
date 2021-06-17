@@ -51,6 +51,7 @@ namespace FFXIV_Log_Splitter
                         {
                             File.Delete(fileName);
                         }
+                        encCount = 0;
                         zone = parts[3];
                         dateTime = DateTime.Parse(parts[1]).ToUniversalTime();
                         fileName = getFilename(zone, dateTime);
