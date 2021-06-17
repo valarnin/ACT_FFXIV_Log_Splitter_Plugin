@@ -9,10 +9,12 @@ namespace FFXIV_Log_Splitter
     {
         private StreamWriter file;
         private LogLineEventDelegate del;
+        private CombatToggleEventDelegate del2;
 
         public void DeInitPlugin()
         {
             ActGlobals.oFormActMain.BeforeLogLineRead -= del;
+            ActGlobals.oFormActMain.OnCombatEnd -= del2;
             file.Close();
         }
 
@@ -21,8 +23,19 @@ namespace FFXIV_Log_Splitter
             ((TabControl)pluginScreenSpace.Parent).TabPages.Remove(pluginScreenSpace);
             var zone = ActGlobals.oFormActMain.CurrentZone;
             var dateTime = DateTime.UtcNow;
-            file = new StreamWriter(getFilename(zone, dateTime), true);
+            var fileName = getFilename(zone, dateTime);
+            file = new StreamWriter(fileName, true);
             file.AutoFlush = true;
+
+            int encCount = 0;
+
+            del2 = (bool isImport, CombatToggleEventArgs encounterInfo) =>
+            {
+                if (!isImport && encounterInfo.encounter.GetEncounterSuccessLevel() > 0)
+                    ++encCount;
+            };
+
+            ActGlobals.oFormActMain.OnCombatEnd += del2;
 
             del = (bool isImport, LogLineEventArgs logInfo) =>
             {
@@ -34,9 +47,14 @@ namespace FFXIV_Log_Splitter
                     if (et == 1)
                     {
                         file.Close();
+                        if (encCount < 1)
+                        {
+                            File.Delete(fileName);
+                        }
                         zone = parts[3];
                         dateTime = DateTime.Parse(parts[1]).ToUniversalTime();
-                        file = new StreamWriter(getFilename(zone, dateTime), true);
+                        fileName = getFilename(zone, dateTime);
+                        file = new StreamWriter(fileName, true);
                         file.AutoFlush = true;
                     }
                     file.WriteLine(line);
