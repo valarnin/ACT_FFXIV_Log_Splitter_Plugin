@@ -44,7 +44,7 @@ namespace FFXIV_Log_Splitter
                     var line = logInfo.originalLogLine;
                     var parts = line.Split('|');
                     var et = uint.Parse(parts[0]);
-                    if (et == 1)
+                    if (et == 1 && !parts[3].Equals(zone))
                     {
                         file.Close();
                         if (encCount < 1)
@@ -76,7 +76,7 @@ namespace FFXIV_Log_Splitter
             var logFolder = Path.GetDirectoryName(ActGlobals.oFormActMain.LogFilePath);
             var name = dateTime.ToString("yyyy-MM-ddTHH\\_mm\\_ss.fffffffzzz") + "_" + zone;
             name = string.Join("_", name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
-            return logFolder + Path.DirectorySeparatorChar + "Zone_" + name + ".log";
+            return logFolder + Path.DirectorySeparatorChar + "Zone_" + name + ".zonelog";
         }
     }
 }
