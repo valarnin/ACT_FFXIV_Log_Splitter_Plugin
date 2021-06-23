@@ -8,14 +8,15 @@ namespace FFXIV_Log_Splitter
     public class Log_Splitter_Plugin : IActPluginV1
     {
         private StreamWriter file;
-        private LogLineEventDelegate del;
-        private CombatToggleEventDelegate del2;
+        private LogLineEventDelegate LogLineDel;
+        private CombatToggleEventDelegate CombatDel;
 
         public void DeInitPlugin()
         {
-            ActGlobals.oFormActMain.BeforeLogLineRead -= del;
-            ActGlobals.oFormActMain.OnCombatEnd -= del2;
+            ActGlobals.oFormActMain.BeforeLogLineRead -= LogLineDel;
+            ActGlobals.oFormActMain.OnCombatEnd -= CombatDel;
             file.Close();
+            pluginStatusText.Text = "Powered Off";
         }
 
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
@@ -29,26 +30,29 @@ namespace FFXIV_Log_Splitter
 
             int encCount = 0;
 
-            del2 = (bool isImport, CombatToggleEventArgs encounterInfo) =>
+            CombatDel = (bool isImport, CombatToggleEventArgs encounterInfo) =>
             {
+                // Keep track of the number of encounter/combat
                 if (!isImport && encounterInfo.encounter.GetEncounterSuccessLevel() > 0)
                     ++encCount;
             };
 
-            ActGlobals.oFormActMain.OnCombatEnd += del2;
+            ActGlobals.oFormActMain.OnCombatEnd += CombatDel;
 
-            del = (bool isImport, LogLineEventArgs logInfo) =>
+            LogLineDel = (bool isImport, LogLineEventArgs logInfo) =>
             {
                 try
                 {
                     var line = logInfo.originalLogLine;
                     var parts = line.Split('|');
-                    var et = uint.Parse(parts[0]);
-                    if (et == 1 && !parts[3].Equals(zone))
+                    var lineID = uint.Parse(parts[0]);
+                    
+                    if (lineID == 1 && !parts[3].Equals(zone))
                     {
                         file.Close();
                         if (encCount < 1)
                         {
+                            // If no combat in zone, delete log file
                             File.Delete(fileName);
                         }
                         encCount = 0;
@@ -66,7 +70,7 @@ namespace FFXIV_Log_Splitter
                 }
             };
 
-            ActGlobals.oFormActMain.BeforeLogLineRead += del;
+            ActGlobals.oFormActMain.BeforeLogLineRead += LogLineDel;
 
             pluginStatusText.Text = "Initialized";
         }
