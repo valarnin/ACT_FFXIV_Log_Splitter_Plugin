@@ -10,6 +10,7 @@ namespace FFXIV_Log_Splitter
         private StreamWriter file;
         private LogLineEventDelegate LogLineDel;
         private CombatToggleEventDelegate CombatDel;
+        private Label pluginStatusText;
 
         public void DeInitPlugin()
         {
@@ -21,6 +22,7 @@ namespace FFXIV_Log_Splitter
 
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
         {
+            this.pluginStatusText = pluginStatusText;
             ((TabControl)pluginScreenSpace.Parent).TabPages.Remove(pluginScreenSpace);
             var zone = ActGlobals.oFormActMain.CurrentZone;
             var dateTime = DateTime.UtcNow;
@@ -80,7 +82,7 @@ namespace FFXIV_Log_Splitter
             var logFolder = Path.GetDirectoryName(ActGlobals.oFormActMain.LogFilePath);
             var name = dateTime.ToString("yyyy-MM-ddTHH\\_mm\\_ss.fffffffzzz") + "_" + zone;
             name = string.Join("_", name.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries)).TrimEnd('.');
-            return logFolder + Path.DirectorySeparatorChar + "Zone_" + name + ".zonelog";
+            return logFolder + Path.DirectorySeparatorChar + "Zone_" + name + ".log";
         }
     }
 }
