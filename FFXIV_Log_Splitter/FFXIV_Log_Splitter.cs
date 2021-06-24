@@ -16,7 +16,7 @@ namespace FFXIV_Log_Splitter
             ActGlobals.oFormActMain.BeforeLogLineRead -= LogLineDel;
             ActGlobals.oFormActMain.OnCombatEnd -= CombatDel;
             file.Close();
-            pluginStatusText.Text = "Powered Off";
+            pluginStatusText.Text = "Unloaded";
         }
 
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
